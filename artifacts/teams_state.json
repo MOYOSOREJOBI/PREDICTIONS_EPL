@@ -1,0 +1,11 @@
+{
+  "updatedAt": "2026-02-19T00:00:00.000Z",
+  "teams": {
+    "Arsenal": {"elo": 1660, "form_points_last5": 11, "form_points_last10": 22},
+    "Chelsea": {"elo": 1580, "form_points_last5": 8, "form_points_last10": 14},
+    "Liverpool": {"elo": 1685, "form_points_last5": 12, "form_points_last10": 24},
+    "Manchester City": {"elo": 1705, "form_points_last5": 13, "form_points_last10": 25},
+    "Manchester United": {"elo": 1600, "form_points_last5": 9, "form_points_last10": 17},
+    "Tottenham": {"elo": 1615, "form_points_last5": 10, "form_points_last10": 18}
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "accuracy": 0.54,
+  "logloss": 0.98,
+  "brier": 0.62,
+  "trainingWindow": "2015-2025",
+  "updatedAt": "2026-02-19T00:00:00.000Z"
+}

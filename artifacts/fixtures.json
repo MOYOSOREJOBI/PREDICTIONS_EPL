@@ -1,0 +1,7 @@
+{
+  "updatedAt": "2026-02-19T00:00:00.000Z",
+  "fixtures": [
+    {"date": "2026-02-22", "homeTeam": "Arsenal", "awayTeam": "Chelsea", "odds": {"home": 1.85, "draw": 3.4, "away": 4.3}},
+    {"date": "2026-02-22", "homeTeam": "Liverpool", "awayTeam": "Tottenham", "odds": {"home": 1.9, "draw": 3.5, "away": 4.0}}
+  ]
+}
