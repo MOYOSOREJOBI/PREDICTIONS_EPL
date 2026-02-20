@@ -1,62 +1,48 @@
-# EPL Predict (Next.js + Prisma + TypeScript inference)
+# EPL Predict & Pick
 
-Production-oriented EPL prediction and picks tracking app.
+Next.js + TypeScript + Prisma project for EPL outcome/scoreline probabilities and session-based pick tracking.
 
-## Stack
-- Next.js App Router + TypeScript + Tailwind
-- Prisma + Postgres (Vercel Postgres / Neon)
-- Python offline pipeline for ingestion + features + training + export
-- TypeScript server-side inference using `artifacts/model_adaboost.json`
+## Data + model pipeline
 
-## Setup
-1. Install dependencies:
-   - `npm install`
-2. Configure env:
-   - `DATABASE_URL=postgres://...`
-   - `CRON_SECRET=...`
-   - optional: `FOOTBALL_DATA_API_KEY=...`
-3. Prisma:
-   - `npx prisma generate`
-   - `npx prisma db push`
-4. Run app:
-   - `npm run dev`
+Sources:
+- football-data.co.uk seasonal EPL CSVs (`2015-16` through `2025-26`)
+- football-data.co.uk `fixtures.csv` (division `E0`)
+- optional live odds provider when `ODDS_API_KEY` is set
 
-## Data + ML pipeline
-Run in order:
+Run now:
 1. `python scripts/data/refresh_epl_data.py`
-2. `python scripts/ml/build_dataset.py`
-3. `python scripts/ml/train_adaboost.py`
-4. `python scripts/ml/export_adaboost_json.py`
-5. `python scripts/ml/verify_ts_parity.py`
+2. `python scripts/ml/fit_model.py`
+3. `python scripts/build_artifacts.py`
 
-Outputs:
-- `data/processed/matches.csv`
-- `data/processed/features.csv`
-- `artifacts/model_adaboost.json`
+Artifacts generated:
+- `artifacts/model_params.json`
 - `artifacts/fixtures.json`
 - `artifacts/teams_state.json`
 - `artifacts/metrics.json`
 - `artifacts/metadata.json`
 
-## API routes
-- `GET /api/fixtures`
-- `GET /api/match/:id`
+## Local development
+
+1. `npm install`
+2. `npx prisma db push`
+3. `npm run dev`
+
+## APIs
+
+- `GET /api/fixtures?from=&to=&team=&sort=kickoff|ev|edge`
+- `GET /api/match/[id]`
 - `POST /api/predict`
 - `POST /api/picks`
 - `GET /api/picks`
-- `POST /api/admin/refresh` (header `x-cron-secret`)
-- `POST /api/admin/settle` (header `x-cron-secret`)
+- `GET /api/cron/daily` (`x-cron-secret` required)
 
-## Tests
-- Unit: `npm test`
-- Type check: `npm run typecheck`
-- E2E: `npm run e2e`
+## Automation
 
-## Vercel deploy
-- Create Postgres database (Vercel Postgres / Neon)
-- Set `DATABASE_URL` and `CRON_SECRET`
-- Build command: `npm run build`
-- Run `npx prisma db push` in deploy hook or prebuild pipeline
+- GitHub Actions daily refresh: `.github/workflows/daily_refresh.yml` (06:00 UTC)
+- Vercel cron trigger: `vercel.json` -> `/api/cron/daily`
 
-## Disclaimer
-Predictions are probabilistic estimates and not guarantees.
+## Deployment
+
+- Configure `DATABASE_URL` and `CRON_SECRET`
+- Deploy to Vercel
+- Enable scheduled GitHub Action and Vercel cron

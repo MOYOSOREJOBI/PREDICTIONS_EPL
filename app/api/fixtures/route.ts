@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import fixtures from "@/artifacts/fixtures.json";
-import { predictAdaBoost } from "@/lib/adaboost";
-import { buildRecommendation } from "@/lib/recommendation";
+import { evTable, predictMatch } from "@/lib/model";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
   const team = q.get("team")?.toLowerCase();
-  const sort = q.get("sort") || "date";
+  const from = q.get("from");
+  const to = q.get("to");
+  const sort = q.get("sort") ?? "kickoff";
 
-  let rows = fixtures.fixtures.map((f) => {
-    const v = [1500,1500,0,7,7,0,14,14,0,0.42,0.28,0.30,1.06];
-    const pred = predictAdaBoost(v).probs;
-    const rec = buildRecommendation(pred, { home: f.odds.home, draw: f.odds.draw, away: f.odds.away });
-    return { ...f, prediction: pred, recommendation: rec };
+  let rows = fixtures.fixtures.map((f: any) => {
+    const p = predictMatch(f.homeTeam, f.awayTeam, f.odds);
+    const rec = f.odds?.home && f.odds?.draw && f.odds?.away ? evTable(p.probs, f.odds) : null;
+    return { ...f, prediction: p, recommendation: rec };
   });
 
-  if (team) rows = rows.filter((r) => r.homeTeam.toLowerCase().includes(team) || r.awayTeam.toLowerCase().includes(team));
-  rows = rows.sort((a, b) => sort === "ev" ? b.recommendation.ev.H - a.recommendation.ev.H : sort === "edge" ? b.recommendation.edge.H - a.recommendation.edge.H : a.date.localeCompare(b.date));
+  if (team) rows = rows.filter((r: any) => r.homeTeam.toLowerCase().includes(team) || r.awayTeam.toLowerCase().includes(team));
+  if (from) rows = rows.filter((r: any) => r.kickoff >= from);
+  if (to) rows = rows.filter((r: any) => r.kickoff <= to);
+  rows = rows.sort((a: any, b: any) => {
+    if (sort === "ev") return (b.recommendation?.ev?.H ?? -999) - (a.recommendation?.ev?.H ?? -999);
+    if (sort === "edge") return (b.recommendation?.edge?.H ?? -999) - (a.recommendation?.edge?.H ?? -999);
+    return a.kickoff.localeCompare(b.kickoff);
+  });
+
   return NextResponse.json({ fixtures: rows });
 }
