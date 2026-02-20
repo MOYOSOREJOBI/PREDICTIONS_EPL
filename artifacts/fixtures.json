@@ -1,7 +1,15 @@
 {
-  "updatedAt": "2026-02-19T00:00:00.000Z",
+  "generatedAt": "2026-02-20T00:00:00.000Z",
   "fixtures": [
-    {"date": "2026-02-22", "homeTeam": "Arsenal", "awayTeam": "Chelsea", "odds": {"home": 1.85, "draw": 3.4, "away": 4.3}},
-    {"date": "2026-02-22", "homeTeam": "Liverpool", "awayTeam": "Tottenham", "odds": {"home": 1.9, "draw": 3.5, "away": 4.0}}
+    {"id":"f1","date":"2026-02-21T12:30:00Z","season":"2025-26","homeTeam":"Arsenal","awayTeam":"Chelsea","odds":{"home":1.95,"draw":3.45,"away":3.95}},
+    {"id":"f2","date":"2026-02-21T15:00:00Z","season":"2025-26","homeTeam":"Liverpool","awayTeam":"Tottenham","odds":{"home":1.75,"draw":3.8,"away":4.6}},
+    {"id":"f3","date":"2026-02-21T15:00:00Z","season":"2025-26","homeTeam":"Manchester City","awayTeam":"Brentford","odds":{"home":1.48,"draw":4.6,"away":6.8}},
+    {"id":"f4","date":"2026-02-21T17:30:00Z","season":"2025-26","homeTeam":"Newcastle United","awayTeam":"Aston Villa","odds":{"home":2.1,"draw":3.4,"away":3.35}},
+    {"id":"f5","date":"2026-02-22T14:00:00Z","season":"2025-26","homeTeam":"Everton","awayTeam":"West Ham United","odds":{"home":2.55,"draw":3.1,"away":2.82}},
+    {"id":"f6","date":"2026-02-22T14:00:00Z","season":"2025-26","homeTeam":"Fulham","awayTeam":"Crystal Palace","odds":{"home":2.4,"draw":3.2,"away":2.95}},
+    {"id":"f7","date":"2026-02-22T14:00:00Z","season":"2025-26","homeTeam":"Nottingham Forest","awayTeam":"Bournemouth","odds":{"home":2.22,"draw":3.32,"away":3.2}},
+    {"id":"f8","date":"2026-02-22T16:30:00Z","season":"2025-26","homeTeam":"Manchester United","awayTeam":"Brighton and Hove Albion","odds":{"home":2.05,"draw":3.5,"away":3.7}},
+    {"id":"f9","date":"2026-02-23T20:00:00Z","season":"2025-26","homeTeam":"Wolverhampton","awayTeam":"Leeds United","odds":{"home":2.28,"draw":3.18,"away":3.3}},
+    {"id":"f10","date":"2026-02-24T20:00:00Z","season":"2025-26","homeTeam":"Burnley","awayTeam":"Sunderland","odds":{"home":2.46,"draw":3.05,"away":2.98}}
   ]
 }

@@ -1,57 +1,62 @@
-# EPL Predictor (Next.js + AdaBoost SAMME.R)
+# EPL Predict (Next.js + Prisma + TypeScript inference)
 
-Production-oriented EPL match prediction app with a white, minimal UI and Vercel-safe TypeScript inference.
+Production-oriented EPL prediction and picks tracking app.
 
 ## Stack
-- Next.js App Router + TypeScript + Tailwind CSS
-- Prisma + Postgres (Vercel Postgres/Neon compatible)
-- AdaBoostClassifier (SAMME.R) exported to JSON for runtime TS inference
+- Next.js App Router + TypeScript + Tailwind
+- Prisma + Postgres (Vercel Postgres / Neon)
+- Python offline pipeline for ingestion + features + training + export
+- TypeScript server-side inference using `artifacts/model_adaboost.json`
 
 ## Setup
-```bash
-npm install
-cp .env.example .env
-npx prisma generate
-npx prisma db push
-npm run dev
-```
+1. Install dependencies:
+   - `npm install`
+2. Configure env:
+   - `DATABASE_URL=postgres://...`
+   - `CRON_SECRET=...`
+   - optional: `FOOTBALL_DATA_API_KEY=...`
+3. Prisma:
+   - `npx prisma generate`
+   - `npx prisma db push`
+4. Run app:
+   - `npm run dev`
 
-## Environment
-Create `.env` with:
-```bash
-DATABASE_URL="postgresql://..."
-POSTGRES_URL="postgresql://..." # optional fallback
-NEXT_PUBLIC_BASE_URL="http://localhost:3000"
-```
+## Data + ML pipeline
+Run in order:
+1. `python scripts/data/refresh_epl_data.py`
+2. `python scripts/ml/build_dataset.py`
+3. `python scripts/ml/train_adaboost.py`
+4. `python scripts/ml/export_adaboost_json.py`
+5. `python scripts/ml/verify_ts_parity.py`
 
-## Build
-```bash
-npm run build
-npm run start
-```
+Outputs:
+- `data/processed/matches.csv`
+- `data/processed/features.csv`
+- `artifacts/model_adaboost.json`
+- `artifacts/fixtures.json`
+- `artifacts/teams_state.json`
+- `artifacts/metrics.json`
+- `artifacts/metadata.json`
 
-## ML Pipeline
-```bash
-python scripts/ml/train_adaboost.py
-python scripts/ml/export_adaboost_json.py
-python scripts/ml/build_artifacts.py
-```
+## API routes
+- `GET /api/fixtures`
+- `GET /api/match/:id`
+- `POST /api/predict`
+- `POST /api/picks`
+- `GET /api/picks`
+- `POST /api/admin/refresh` (header `x-cron-secret`)
+- `POST /api/admin/settle` (header `x-cron-secret`)
 
-Artifacts are committed under `/artifacts` and read-only at runtime.
+## Tests
+- Unit: `npm test`
+- Type check: `npm run typecheck`
+- E2E: `npm run e2e`
 
-## Prisma commands
-```bash
-npx prisma migrate dev
-npx prisma db push
-npx prisma generate
-```
+## Vercel deploy
+- Create Postgres database (Vercel Postgres / Neon)
+- Set `DATABASE_URL` and `CRON_SECRET`
+- Build command: `npm run build`
+- Run `npx prisma db push` in deploy hook or prebuild pipeline
 
-## Deploy to Vercel
-1. Import repository in Vercel.
-2. Set `DATABASE_URL` (or `POSTGRES_URL`).
-3. Deploy.
-
-## Notes
-- Legacy Flask app has been moved to `/legacy_flask`.
-- Inference runs in TypeScript from `artifacts/model_adaboost.json`, no sklearn runtime on Vercel.
-- Model outputs are probabilistic and not guaranteed outcomes.
+## Disclaimer
+Predictions are probabilistic estimates and not guarantees.
