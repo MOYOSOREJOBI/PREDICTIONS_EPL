@@ -1,0 +1,48 @@
+{
+  "teams": [
+    "Arsenal",
+    "Chelsea",
+    "Liverpool",
+    "Manchester City",
+    "Tottenham",
+    "Manchester United"
+  ],
+  "attack": {
+    "Arsenal": 0.0,
+    "Chelsea": 0.0,
+    "Liverpool": 0.0,
+    "Manchester City": 0.0,
+    "Tottenham": 0.0,
+    "Manchester United": 0.0
+  },
+  "defense": {
+    "Arsenal": 0.0,
+    "Chelsea": 0.0,
+    "Liverpool": 0.0,
+    "Manchester City": 0.0,
+    "Tottenham": 0.0,
+    "Manchester United": 0.0
+  },
+  "homeAdvantage": 0.15,
+  "blend": {
+    "wModel": 1.0,
+    "wMarket": 1.0,
+    "bias": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "trainingSeasons": [
+    "2024-2025"
+  ],
+  "holdoutSeason": "2025-2026",
+  "metrics": {
+    "accuracy": 0.0,
+    "logloss": 0.0,
+    "brier": 0.0,
+    "ece": 0.0
+  },
+  "updatedAt": "2026-02-20T22:47:50.306189+00:00",
+  "maxGoals": 8
+}

@@ -1,120 +1,115 @@
 from __future__ import annotations
 
-from pathlib import Path
-import io
+import csv
 import json
-import os
 import re
 from datetime import datetime, timezone
+from pathlib import Path
+from urllib.request import urlopen
 
-import pandas as pd
-import requests
-
-SEASONS = [
-    "1516","1617","1718","1819","1920","2021","2122","2223","2324","2425","2526"
-]
 BASE_URL = "https://www.football-data.co.uk/mmz4281"
-OUT_RAW = Path("data/raw")
-OUT_PROCESSED = Path("data/processed/matches.csv")
-
-TEAM_NORMALIZATION = {
-    "Man City": "Manchester City",
-    "Man United": "Manchester United",
-    "Spurs": "Tottenham",
-    "Wolves": "Wolverhampton",
-    "Newcastle": "Newcastle United",
-    "Nott'm Forest": "Nottingham Forest",
-    "Brighton": "Brighton and Hove Albion",
-    "West Brom": "West Bromwich Albion",
-    "Leicester": "Leicester City",
-}
+FIXTURES_URL = "https://www.football-data.co.uk/fixtures.csv"
+RAW_DIR = Path("data/raw")
+PROCESSED_DIR = Path("data/processed")
 
 
-def normalize_team(name: str) -> str:
+def season_codes(start=2015, end=2025):
+    return [f"{str(y)[-2:]}{str(y+1)[-2:]}" for y in range(start, end + 1)]
+
+
+def download(url: str, path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with urlopen(url, timeout=60) as r:
+        path.write_bytes(r.read())
+
+
+def normalize_team(name: str, mapping: dict[str, str]) -> str:
     clean = re.sub(r"\s+", " ", str(name).strip())
-    return TEAM_NORMALIZATION.get(clean, clean)
+    return mapping.get(clean, clean)
 
 
-def download_season(season: str) -> Path:
-    OUT_RAW.mkdir(parents=True, exist_ok=True)
-    target = OUT_RAW / f"epl_{season}.csv"
-    url = f"{BASE_URL}/{season}/E0.csv"
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    target.write_bytes(resp.content)
-    return target
+def parse_date(value: str):
+    value = value.strip()
+    for fmt in ["%d/%m/%Y", "%d/%m/%y", "%Y-%m-%d"]:
+        try:
+            return datetime.strptime(value, fmt).replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+    return None
 
 
-def load_and_clean(path: Path, season: str) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    required = ["Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG", "FTR"]
-    missing = [c for c in required if c not in df.columns]
-    if missing:
-        raise ValueError(f"{path} missing columns {missing}")
+def main():
+    mapping = json.loads(Path("data/team_name_map.json").read_text()) if Path("data/team_name_map.json").exists() else {}
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
-    odds_candidates = [
-        ("B365H", "B365D", "B365A"),
-        ("AvgH", "AvgD", "AvgA"),
-        ("PSH", "PSD", "PSA"),
-    ]
-
-    odds_triplet = None
-    for cand in odds_candidates:
-        if all(c in df.columns for c in cand):
-            odds_triplet = cand
-            break
-    if odds_triplet is None:
-        raise ValueError(f"No supported odds columns in {path}")
-
-    df = df.copy()
-    df["date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
-    df["season"] = f"20{season[:2]}-20{season[2:]}"
-    df["home_team"] = df["HomeTeam"].map(normalize_team)
-    df["away_team"] = df["AwayTeam"].map(normalize_team)
-    df["home_goals"] = pd.to_numeric(df["FTHG"], errors="coerce")
-    df["away_goals"] = pd.to_numeric(df["FTAG"], errors="coerce")
-    df["result"] = df["FTR"].astype(str).str.upper().str.strip()
-
-    h, d, a = odds_triplet
-    df["odds_home"] = pd.to_numeric(df[h], errors="coerce")
-    df["odds_draw"] = pd.to_numeric(df[d], errors="coerce")
-    df["odds_away"] = pd.to_numeric(df[a], errors="coerce")
-
-    canonical = df[[
-        "date", "season", "home_team", "away_team", "home_goals", "away_goals", "result", "odds_home", "odds_draw", "odds_away"
-    ]]
-
-    canonical = canonical.dropna(subset=["date", "home_team", "away_team", "result"])
-    canonical = canonical[canonical["result"].isin(["H", "D", "A"])]
-    canonical = canonical.drop_duplicates(subset=["date", "home_team", "away_team"], keep="last")
-
-    # fill odds with season medians as fallback
-    for col in ["odds_home", "odds_draw", "odds_away"]:
-        canonical[col] = canonical[col].fillna(canonical[col].median())
-
-    return canonical
-
-
-def main() -> None:
     rows = []
-    for s in SEASONS:
-        path = download_season(s)
-        rows.append(load_and_clean(path, s))
+    for code in season_codes():
+        p = RAW_DIR / f"E0_{code}.csv"
+        download(f"{BASE_URL}/{code}/E0.csv", p)
+        with p.open() as f:
+            reader = csv.DictReader(f)
+            for r in reader:
+                if not r.get("Date") or not r.get("HomeTeam") or not r.get("AwayTeam"):
+                    continue
+                dt = parse_date(r["Date"])
+                if not dt:
+                    continue
+                ftr = (r.get("FTR") or "").strip().upper()
+                if ftr not in {"H", "D", "A"}:
+                    continue
+                try:
+                    hg = int(float(r.get("FTHG", "")))
+                    ag = int(float(r.get("FTAG", "")))
+                except ValueError:
+                    continue
+                rows.append({
+                    "date": dt.isoformat(),
+                    "season": f"20{code[:2]}-20{code[2:]}",
+                    "home_team": normalize_team(r["HomeTeam"], mapping),
+                    "away_team": normalize_team(r["AwayTeam"], mapping),
+                    "home_goals": hg,
+                    "away_goals": ag,
+                    "result": ftr,
+                    "odds_home": r.get("B365H") or "",
+                    "odds_draw": r.get("B365D") or "",
+                    "odds_away": r.get("B365A") or "",
+                })
 
-    full = pd.concat(rows, ignore_index=True).sort_values("date")
-    OUT_PROCESSED.parent.mkdir(parents=True, exist_ok=True)
-    full.to_csv(OUT_PROCESSED, index=False)
+    rows.sort(key=lambda x: x["date"])
+    with (PROCESSED_DIR / "matches.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w.writeheader(); w.writerows(rows)
 
-    manifest = {
-        "updatedAt": datetime.now(timezone.utc).isoformat(),
-        "source": "football-data.co.uk",
-        "seasons": [f"20{s[:2]}-20{s[2:]}" for s in SEASONS],
-        "rows": int(len(full)),
-        "output": str(OUT_PROCESSED),
-        "apiKeyUsed": bool(os.getenv("FOOTBALL_DATA_API_KEY")),
-    }
-    Path("data/processed/manifest.json").write_text(json.dumps(manifest, indent=2))
-    print(json.dumps(manifest, indent=2))
+    fpath = RAW_DIR / "fixtures.csv"
+    download(FIXTURES_URL, fpath)
+    fixtures_out = []
+    with fpath.open() as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            if (r.get("Div") or "").strip() != "E0":
+                continue
+            dt = parse_date(r.get("Date", ""))
+            if not dt:
+                continue
+            tm = (r.get("Time") or "12:00").strip()
+            if len(tm) == 5:
+                hh, mm = tm.split(":")
+                dt = dt.replace(hour=int(hh), minute=int(mm))
+            fixtures_out.append({
+                "kickoff": dt.isoformat(),
+                "home_team": normalize_team(r.get("HomeTeam", ""), mapping),
+                "away_team": normalize_team(r.get("AwayTeam", ""), mapping),
+                "odds_home": r.get("B365H") or "",
+                "odds_draw": r.get("B365D") or "",
+                "odds_away": r.get("B365A") or "",
+            })
+    with (PROCESSED_DIR / "fixtures.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(fixtures_out[0].keys()) if fixtures_out else ["kickoff", "home_team", "away_team", "odds_home", "odds_draw", "odds_away"])
+        w.writeheader();
+        if fixtures_out: w.writerows(fixtures_out)
+
+    (PROCESSED_DIR / "manifest.json").write_text(json.dumps({"updatedAt": datetime.now(timezone.utc).isoformat(), "rows": len(rows)}, indent=2))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,41 @@
 {
-  "season": "2025-26",
+  "updatedAt": "2026-02-20T22:47:51.059733+00:00",
   "teams": [
-    "Arsenal","Aston Villa","Bournemouth","Brentford","Brighton and Hove Albion","Burnley","Chelsea","Crystal Palace","Everton","Fulham","Leeds United","Liverpool","Manchester City","Manchester United","Newcastle United","Nottingham Forest","Sunderland","Tottenham","West Ham United","Wolverhampton"
+    {
+      "team": "Arsenal",
+      "attack": 0.0,
+      "defense": 0.0,
+      "formPointsLast5": 0
+    },
+    {
+      "team": "Chelsea",
+      "attack": 0.0,
+      "defense": 0.0,
+      "formPointsLast5": 0
+    },
+    {
+      "team": "Liverpool",
+      "attack": 0.0,
+      "defense": 0.0,
+      "formPointsLast5": 0
+    },
+    {
+      "team": "Manchester City",
+      "attack": 0.0,
+      "defense": 0.0,
+      "formPointsLast5": 0
+    },
+    {
+      "team": "Tottenham",
+      "attack": 0.0,
+      "defense": 0.0,
+      "formPointsLast5": 0
+    },
+    {
+      "team": "Manchester United",
+      "attack": 0.0,
+      "defense": 0.0,
+      "formPointsLast5": 0
+    }
   ]
 }
