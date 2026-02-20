@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Prediction {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  homeTeam       String
+  awayTeam       String
+  probsH         Float
+  probsD         Float
+  probsA         Float
+  predictedLabel String
+  modelVersion   String
+  featuresJson   Json?
+  userAgent      String?
+  ipHash         String?
+}
+
+model FixtureCache {
+  id           String   @id @default(cuid())
+  fetchedAt    DateTime @default(now())
+  fixturesJson Json
+}
