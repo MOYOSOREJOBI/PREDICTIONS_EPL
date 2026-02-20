@@ -1,6 +1,5 @@
-import { Card } from "@/components/Card";
-import { artifacts } from "@/lib/artifacts";
+import metrics from "@/artifacts/metrics.json";
 
 export default function ModelPage() {
-  return <Card><h2 className="mb-4 text-lg font-semibold">Model</h2><p className="text-sm text-zinc-600">Algorithm: {artifacts.model.algorithm} {artifacts.model.samme}</p><p className="text-sm text-zinc-600">Version: {artifacts.model.version}</p><p className="text-sm text-zinc-600">Accuracy: {artifacts.metrics.accuracy}</p></Card>;
+  return <div className="rounded-xl border bg-white p-6"><h1 className="mb-4 text-xl font-semibold">Model Metrics</h1><pre className="text-sm">{JSON.stringify(metrics, null, 2)}</pre></div>;
 }

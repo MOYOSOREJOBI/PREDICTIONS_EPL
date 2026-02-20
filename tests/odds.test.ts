@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeOdds } from "@/lib/odds";
+import { normalizeOdds } from "../lib/odds";
 
 describe("normalizeOdds", () => {
   it("normalizes implied probabilities", () => {

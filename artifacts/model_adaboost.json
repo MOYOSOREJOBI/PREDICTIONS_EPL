@@ -1,44 +1,36 @@
 {
-  "version": "2026-02-19",
+  "version": "adaboost-export-v2",
   "algorithm": "AdaBoostClassifier",
   "samme": "SAMME.R",
-  "learning_rate": 0.8,
+  "learning_rate": 0.5,
   "n_classes": 3,
   "labels": ["H", "D", "A"],
   "feature_names": [
-    "elo_home",
-    "elo_away",
-    "elo_diff",
-    "form_points_last5_home",
-    "form_points_last5_away",
-    "form_points_last5_diff",
-    "form_points_last10_home",
-    "form_points_last10_away",
-    "form_points_last10_diff",
-    "odds_p_home",
-    "odds_p_draw",
-    "odds_p_away"
+    "elo_home","elo_away","elo_diff",
+    "form_points_last5_home","form_points_last5_away","form_points_last5_diff",
+    "form_points_last10_home","form_points_last10_away","form_points_last10_diff",
+    "p_home","p_draw","p_away","overround"
   ],
   "preprocess": {
-    "type": "standardize",
-    "mean": [1500,1500,0,7,7,0,14,14,0,0.45,0.26,0.29],
-    "std": [120,120,160,3.5,3.5,4.5,6,6,7.5,0.1,0.08,0.09]
+    "mean": [1500,1500,0,7,7,0,14,14,0,0.45,0.27,0.28,1.05],
+    "std": [120,120,160,5,5,8,10,10,15,0.1,0.08,0.09,0.04]
   },
-  "estimator_weights": [1,1],
+  "estimator_weights": [1.0, 0.8],
   "trees": [
     {
       "children_left": [1,-1,-1],
       "children_right": [2,-1,-1],
       "feature": [2,-2,-2],
-      "threshold": [0,-2,-2],
-      "value": [[[32,18,15]],[[18,8,3]],[[14,10,12]]]
+      "threshold": [0.0,-2.0,-2.0],
+      "value": [[[0,0,0]],[[28,12,10]],[[12,14,24]]]
     },
     {
       "children_left": [1,-1,-1],
       "children_right": [2,-1,-1],
-      "feature": [5,-2,-2],
-      "threshold": [0,-2,-2],
-      "value": [[[30,16,17]],[[17,7,4]],[[13,9,13]]]
+      "feature": [9,-2,-2],
+      "threshold": [0.0,-2.0,-2.0],
+      "value": [[[0,0,0]],[[24,16,10]],[[10,12,28]]]
     }
-  ]
+  ],
+  "temperature": 1.0
 }

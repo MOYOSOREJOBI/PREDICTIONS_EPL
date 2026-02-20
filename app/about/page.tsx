@@ -1,5 +1,3 @@
-import { Card } from "@/components/Card";
-
 export default function AboutPage() {
-  return <Card><h2 className="mb-4 text-lg font-semibold">About</h2><p className="text-sm text-zinc-600">This project predicts EPL outcomes using a pre-match leakage-free feature set and AdaBoost SAMME.R inference in TypeScript.</p></Card>;
+  return <div className="rounded-xl border bg-white p-6"><h1 className="mb-2 text-xl font-semibold">About</h1><p className="text-sm text-zinc-600">This site provides probabilistic football projections and value estimates. It is not financial advice and does not guarantee outcomes.</p></div>;
 }
